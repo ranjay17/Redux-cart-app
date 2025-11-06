@@ -2,10 +2,9 @@ import React from "react";
 
 const Notification = ({ status, title, message }) => {
   let bgColor;
-
-  if (status === "pending") bgColor = "#007bff"; 
-  if (status === "success") bgColor = "#28a745"; 
-  if (status === "error") bgColor = "#dc3545"; 
+  if (status === "pending") bgColor = "#007bff";
+  if (status === "success") bgColor = "#28a745";
+  if (status === "error") bgColor = "#dc3545";
 
   return (
     <section style={{ ...styles.notification, backgroundColor: bgColor }}>
@@ -13,7 +12,7 @@ const Notification = ({ status, title, message }) => {
       <p>{message}</p>
     </section>
   );
-}
+};
 
 const styles = {
   notification: {

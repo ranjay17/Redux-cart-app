@@ -1,9 +1,9 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { addToCart, removeFromCart } from "../store/cartSlice";
+import { addItemToCart, removeItemFromCart } from "../store/cartSlice";
 
 export default function Cart() {
-  const { items } = useSelector((state) => state.cart);
+  const items = useSelector((state) => state.cart.items);
   const dispatch = useDispatch();
 
   if (items.length === 0) {
@@ -20,13 +20,15 @@ export default function Cart() {
       {items.map((item) => (
         <div key={item.id} style={styles.item}>
           <div>
-            <strong>{item.name}</strong>
+            <strong>{item.title}</strong>
             <p>₹{item.price}</p>
           </div>
           <div>
-            <button onClick={() => dispatch(removeFromCart(item))}>-</button>
+            <button onClick={() => dispatch(removeItemFromCart(item.id))}>
+              -
+            </button>
             <span style={{ margin: "0 8px" }}>{item.quantity}</span>
-            <button onClick={() => dispatch(addToCart(item))}>+</button>
+            <button onClick={() => dispatch(addItemToCart(item))}>+</button>
           </div>
         </div>
       ))}

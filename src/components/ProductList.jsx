@@ -1,10 +1,10 @@
 import React from "react";
 import { useDispatch } from "react-redux";
-import { addToCart } from "../store/cartSlice"
+import { addItemToCart } from "../store/cartSlice";
 
 const products = [
-  { id: 1, name: "Laptop", price: 60000 },
-  { id: 2, name: "Headphones", price: 2500 },
+  { id: 1, title: "Laptop", price: 60000 },
+  { id: 2, title: "Headphones", price: 2500 },
 ];
 
 export default function ProductList() {
@@ -14,11 +14,11 @@ export default function ProductList() {
     <div style={styles.container}>
       {products.map((product) => (
         <div key={product.id} style={styles.card}>
-          <h3>{product.name}</h3>
+          <h3>{product.title}</h3>
           <p>₹{product.price}</p>
           <button
             style={styles.btn}
-            onClick={() => dispatch(addToCart(product))}
+            onClick={() => dispatch(addItemToCart(product))}
           >
             Add to Cart
           </button>

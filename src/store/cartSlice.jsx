@@ -1,7 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  items: [], 
+  items: [],
+  totalQuantity: 0,
   isVisible: false,
 };
 
@@ -9,32 +10,59 @@ const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
+    // ✅ Toggle cart visibility
     toggleCart(state) {
       state.isVisible = !state.isVisible;
     },
-    addToCart(state, action) {
-      const existingItem = state.items.find(
-        (item) => item.id === action.payload.id
+
+    // ✅ Replace entire cart when fetched from API
+    replaceCart(state, action) {
+      state.items = action.payload || [];
+      state.totalQuantity = state.items.reduce(
+        (total, item) => total + item.quantity,
+        0
       );
-      if (existingItem) {
-        existingItem.quantity += 1;
+    },
+
+    // ✅ Add item to cart (or increase quantity if already exists)
+    addItemToCart(state, action) {
+      const newItem = action.payload;
+      const existingItem = state.items.find((item) => item.id === newItem.id);
+      state.totalQuantity++;
+
+      if (!existingItem) {
+        state.items.push({
+          id: newItem.id,
+          title: newItem.title,
+          price: newItem.price,
+          quantity: 1,
+          totalPrice: newItem.price,
+        });
       } else {
-        state.items.push({ ...action.payload, quantity: 1 });
+        existingItem.quantity++;
+        existingItem.totalPrice += newItem.price;
       }
     },
-    removeFromCart(state, action) {
-      const item = state.items.find((item) => item.id === action.payload.id);
-      if (item) {
-        if (item.quantity > 1) {
-          item.quantity -= 1;
-        } else {
-          // quantity becomes 0 → remove item
-          state.items = state.items.filter((i) => i.id !== action.payload.id);
-        }
+
+    // ✅ Remove item from cart (and remove completely if qty = 0)
+    removeItemFromCart(state, action) {
+      const id = action.payload;
+      const existingItem = state.items.find((item) => item.id === id);
+      if (!existingItem) return;
+
+      state.totalQuantity--;
+
+      if (existingItem.quantity === 1) {
+        state.items = state.items.filter((item) => item.id !== id);
+      } else {
+        existingItem.quantity--;
+        existingItem.totalPrice -= existingItem.price;
       }
     },
   },
 });
 
-export const { toggleCart, addToCart, removeFromCart } = cartSlice.actions;
+export const { toggleCart, replaceCart, addItemToCart, removeItemFromCart } =
+  cartSlice.actions;
+
 export default cartSlice.reducer;

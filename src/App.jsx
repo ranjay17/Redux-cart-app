@@ -5,7 +5,7 @@ import ProductList from "./components/ProductList";
 import Cart from "./components/Cart";
 import Notification from "./components/Notification";
 import { showNotification, clearNotification } from "./store/notificationSlice";
-import { replaceCart } from "./store/cartSlice";
+import { replaceCart, sendCartData } from "./store/cartSlice";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -14,7 +14,7 @@ const App = () => {
   const notification = useSelector((state) => state.notification.notification);
   const isInitial = useRef(true);
 
-  // --- Fetch cart data when page loads ---
+  // Fetch cart data on load 
   useEffect(() => {
     const fetchCartData = async () => {
       dispatch(
@@ -32,7 +32,7 @@ const App = () => {
         if (!response.ok) throw new Error("Failed to fetch cart data!");
 
         const data = await response.json();
-        dispatch(replaceCart(data[0]?.items || [])); // Extract saved items
+        dispatch(replaceCart(data[0]?.items || []));
 
         dispatch(
           showNotification({
@@ -49,71 +49,31 @@ const App = () => {
             message: "Fetching cart data failed!",
           })
         );
-        console.error(error);
+        console.log(error)
       }
     };
 
     fetchCartData();
   }, [dispatch]);
 
-  // --- Sync cart whenever items change ---
+  // Send cart data using createAsyncThunk ---
   useEffect(() => {
     if (isInitial.current) {
       isInitial.current = false;
       return;
     }
 
-    const sendCartData = async () => {
-      dispatch(
-        showNotification({
-          status: "pending",
-          title: "Sending...",
-          message: "Sending cart data!",
-        })
-      );
-
-      try {
-        const response = await fetch(
-          "https://crudcrud.com/api/374f5f7d68934e64aa18767ac4e208fa/cart",
-          {
-            method: "POST",
-            body: JSON.stringify({ items }),
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-
-        if (!response.ok) throw new Error("Sending cart data failed!");
-
-        dispatch(
-          showNotification({
-            status: "success",
-            title: "Success!",
-            message: "Sent cart data successfully!",
-          })
-        );
-      } catch (error) {
-        dispatch(
-          showNotification({
-            status: "error",
-            title: "Error!",
-            message: "Sending cart data failed!",
-          })
-        );
-        console.error(error);
-      }
-    };
-
     if (items.length > 0) {
-      sendCartData();
+      dispatch(sendCartData(items));
     }
   }, [items, dispatch]);
 
-  // --- Auto remove notification after 3 seconds ---
+  // Auto remove notification after 3s 
   useEffect(() => {
     if (notification) {
       const timer = setTimeout(() => {
         dispatch(clearNotification());
-      }, 3000); // 3 seconds delay
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [notification, dispatch]);

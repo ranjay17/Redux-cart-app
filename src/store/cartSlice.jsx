@@ -1,68 +1,107 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { showNotification } from "./notificationSlice";
 
 const initialState = {
   items: [],
-  totalQuantity: 0,
   isVisible: false,
 };
+
+// createAsyncThunk for sending cart data
+export const sendCartData = createAsyncThunk(
+  "cart/sendCartData",
+  async (items, { dispatch, rejectWithValue }) => {
+    try {
+      dispatch(
+        showNotification({
+          status: "pending",
+          title: "Sending...",
+          message: "Sending cart data!",
+        })
+      );
+
+      const response = await fetch(
+        "https://crudcrud.com/api/374f5f7d68934e64aa18767ac4e208fa/cart",
+        {
+          method: "POST",
+          body: JSON.stringify({ items }),
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to send cart data!");
+      }
+
+      dispatch(
+        showNotification({
+          status: "success",
+          title: "Success!",
+          message: "Sent cart data successfully!",
+        })
+      );
+
+      return await response.json();
+    } catch (error) {
+      dispatch(
+        showNotification({
+          status: "error",
+          title: "Error!",
+          message: "Sending cart data failed!",
+        })
+      );
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    // ✅ Toggle cart visibility
+    replaceCart(state, action) {
+      state.items = action.payload;
+    },
     toggleCart(state) {
       state.isVisible = !state.isVisible;
     },
-
-    // ✅ Replace entire cart when fetched from API
-    replaceCart(state, action) {
-      state.items = action.payload || [];
-      state.totalQuantity = state.items.reduce(
-        (total, item) => total + item.quantity,
-        0
-      );
-    },
-
-    // ✅ Add item to cart (or increase quantity if already exists)
     addItemToCart(state, action) {
       const newItem = action.payload;
       const existingItem = state.items.find((item) => item.id === newItem.id);
-      state.totalQuantity++;
-
-      if (!existingItem) {
-        state.items.push({
-          id: newItem.id,
-          title: newItem.title,
-          price: newItem.price,
-          quantity: 1,
-          totalPrice: newItem.price,
-        });
+      if (existingItem) {
+        existingItem.quantity += 1;
       } else {
-        existingItem.quantity++;
-        existingItem.totalPrice += newItem.price;
+        state.items.push({ ...newItem, quantity: 1 });
       }
     },
-
-    // ✅ Remove item from cart (and remove completely if qty = 0)
+    // ✅ Add this reducer
     removeItemFromCart(state, action) {
       const id = action.payload;
       const existingItem = state.items.find((item) => item.id === id);
-      if (!existingItem) return;
-
-      state.totalQuantity--;
-
-      if (existingItem.quantity === 1) {
-        state.items = state.items.filter((item) => item.id !== id);
-      } else {
-        existingItem.quantity--;
-        existingItem.totalPrice -= existingItem.price;
+      if (existingItem) {
+        if (existingItem.quantity === 1) {
+          state.items = state.items.filter((item) => item.id !== id);
+        } else {
+          existingItem.quantity -= 1;
+        }
       }
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(sendCartData.fulfilled, (state, action) => {
+        console.log("Cart data sent successfully:", action.payload);
+      })
+      .addCase(sendCartData.rejected, (state, action) => {
+        console.error("Sending cart data failed:", action.payload);
+      });
+  },
 });
 
-export const { toggleCart, replaceCart, addItemToCart, removeItemFromCart } =
-  cartSlice.actions;
+export const {
+  replaceCart,
+  toggleCart,
+  addItemToCart,
+  removeItemFromCart, 
+} = cartSlice.actions;
 
 export default cartSlice.reducer;

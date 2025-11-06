@@ -19,7 +19,10 @@ export default function Cart() {
       <h3>My Cart</h3>
       {items.map((item) => (
         <div key={item.id} style={styles.item}>
-          <span>{item.name}</span>
+          <div>
+            <strong>{item.name}</strong>
+            <p>₹{item.price}</p>
+          </div>
           <div>
             <button onClick={() => dispatch(removeFromCart(item))}>-</button>
             <span style={{ margin: "0 8px" }}>{item.quantity}</span>

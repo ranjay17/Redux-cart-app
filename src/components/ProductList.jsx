@@ -1,10 +1,10 @@
 import React from "react";
 import { useDispatch } from "react-redux";
-import { addToCart, removeFromCart } from "../store/cartSlice";
+import { addToCart } from "../store/cartSlice"
 
 const products = [
-  { id: 1, name: "Laptop" },
-  { id: 2, name: "Headphones" },
+  { id: 1, name: "Laptop", price: 60000 },
+  { id: 2, name: "Headphones", price: 2500 },
 ];
 
 export default function ProductList() {
@@ -15,10 +15,13 @@ export default function ProductList() {
       {products.map((product) => (
         <div key={product.id} style={styles.card}>
           <h3>{product.name}</h3>
-          <div>
-            <button onClick={() => dispatch(removeFromCart(product))}>-</button>
-            <button onClick={() => dispatch(addToCart(product))}>+</button>
-          </div>
+          <p>₹{product.price}</p>
+          <button
+            style={styles.btn}
+            onClick={() => dispatch(addToCart(product))}
+          >
+            Add to Cart
+          </button>
         </div>
       ))}
     </div>
@@ -37,6 +40,13 @@ const styles = {
     borderRadius: "8px",
     padding: "20px",
     textAlign: "center",
-    width: "150px",
+    width: "180px",
+  },
+  btn: {
+    background: "#61dafb",
+    border: "none",
+    padding: "8px 12px",
+    borderRadius: "5px",
+    cursor: "pointer",
   },
 };

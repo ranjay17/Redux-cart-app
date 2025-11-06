@@ -5,13 +5,15 @@ import { toggleCart } from "../store/cartSlice";
 export default function Header() {
   const dispatch = useDispatch();
   const items = useSelector((state) => state.cart.items);
+
+  // total count = sum of all item quantities
   const totalQty = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <header style={styles.header}>
       <h2>🛍️ Redux Cart App</h2>
       <button style={styles.btn} onClick={() => dispatch(toggleCart())}>
-        Cart ({totalQty})
+        🛒 Cart ({totalQty})
       </button>
     </header>
   );
@@ -32,5 +34,6 @@ const styles = {
     padding: "8px 12px",
     borderRadius: "5px",
     cursor: "pointer",
+    fontSize: "16px",
   },
 };

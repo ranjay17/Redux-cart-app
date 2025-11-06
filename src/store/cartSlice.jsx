@@ -13,21 +13,24 @@ const cartSlice = createSlice({
       state.isVisible = !state.isVisible;
     },
     addToCart(state, action) {
-      const existing = state.items.find(
+      const existingItem = state.items.find(
         (item) => item.id === action.payload.id
       );
-      if (existing) {
-        existing.quantity += 1;
+      if (existingItem) {
+        existingItem.quantity += 1;
       } else {
         state.items.push({ ...action.payload, quantity: 1 });
       }
     },
     removeFromCart(state, action) {
       const item = state.items.find((item) => item.id === action.payload.id);
-      if (item && item.quantity > 1) {
-        item.quantity -= 1;
-      } else {
-        state.items = state.items.filter((i) => i.id !== action.payload.id);
+      if (item) {
+        if (item.quantity > 1) {
+          item.quantity -= 1;
+        } else {
+          // quantity becomes 0 → remove item
+          state.items = state.items.filter((i) => i.id !== action.payload.id);
+        }
       }
     },
   },
